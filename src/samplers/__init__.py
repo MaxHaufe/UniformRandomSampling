@@ -52,7 +52,7 @@ class VariabilityModel:
                         clause.append(var if lit > 0 else z3.Not(var))
                     solver.add(z3.Or(*clause))
 
-            return solver, num_literals, num_clauses, literals
+        return solver, num_literals, num_clauses, literals
 
     def get_amount_of_mandatory_features(self) -> int:
         """
