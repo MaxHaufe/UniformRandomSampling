@@ -22,36 +22,6 @@ class VariabilityModel:
         self.model, self.num_literals, self.num_clauses, _ = self.parse_dimacs(path)  # :TODO
         self.model: z3.Solver
 
-    # @staticmethod
-    # def parse_dimacs(path: str) -> (list, int, int):
-    #     """
-    #     Parse the DIMACS file and return a list of lists of literals
-    #
-    #     :param path:
-    #     :type path:
-    #     :return:
-    #     :rtype:
-    #     """
-    #     dimacs = list()
-    #     dimacs.append(list())
-    #     with open(path) as mfile:
-    #         for line in mfile:
-    #             tokens = line.split()
-    #             # get amount of variables and clauses
-    #             if len(tokens) > 0 and tokens[0] == "p":
-    #                 n_vars = int(tokens[2])
-    #                 n_clauses = int(tokens[3])
-    #             if len(tokens) != 0 and tokens[0] not in ("p", "c"):
-    #                 for tok in tokens:
-    #                     lit = int(tok)
-    #                     if lit == 0:
-    #                         dimacs.append(list())
-    #                     else:
-    #                         dimacs[-1].append(lit)
-    #     assert len(dimacs[-1]) == 0
-    #     dimacs.pop()
-    #     return dimacs, n_vars, n_clauses
-
     @staticmethod
     def parse_dimacs(path: str) -> (z3.Solver, int, int):
         solver = z3.Solver()
@@ -83,61 +53,6 @@ class VariabilityModel:
                     solver.add(z3.Or(*clause))
 
             return solver, num_literals, num_clauses, literals
-
-    @staticmethod
-    def parse_dimacs_z3(path: str) -> (z3.Solver, int, int):
-        """
-        Parse the DIMACS file and return a z3 expression
-
-        :param path:
-        :type path:
-        :return:
-        :rtype:
-        """
-        s = z3.Solver()
-        s.from_file(path)
-
-        header = s.dimacs().split('\n')[0]
-        num_vars = header.split()[2]
-        num_clauses = header.split()[3]
-
-        return s, int(num_vars), int(num_clauses)
-
-    # def get_amount_of_mandatory_features(self) -> int:
-    #     """
-    #     Returns the amount of mandatory features in the model
-    #
-    #     TODO: this is a very naive implementation, it may underestimate the amount of mandatory features
-    #     for (a v b) ∧ (a v c) the amount of mandatory features is 0, but it should be 1 (because of a)
-    #     but it is not possible to determine this without a SAT solver (I think)
-    #
-    #     :param dimacs:
-    #     :type dimacs:
-    #     :return:
-    #     :rtype:
-    #     """
-    #     mandatory = 0
-    #     for clause in self.dimacs_list:
-    #         if len(clause) == 1:
-    #             mandatory += 1
-    #     return mandatory
-
-    # def get_amount_of_mandatory_features(self) -> int:
-    #     """
-    #     Returns the amount of optional features in the model
-    #
-    #     :param dimacs:
-    #     :type dimacs:
-    #     :return:
-    #     :rtype:
-    #     """
-    #     mandatory = 0
-    #     for feat in range(1, self.num_vars + 1):
-    #         l = self.dimacs_list.copy()
-    #         l.append([-feat])
-    #         if pycosat.solve(l) == "UNSAT":
-    #             mandatory += 1
-    #     return mandatory
 
     def get_amount_of_mandatory_features(self) -> int:
         """
