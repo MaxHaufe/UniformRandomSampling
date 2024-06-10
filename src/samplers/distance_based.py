@@ -74,7 +74,7 @@ class DistanceBasedSampler:
                         conj.append(lit)
                     else:
                         conj.append(z3.Not(lit))
-                    self.vm.model.add(z3.Not(z3.And(conj)))
+                self.vm.model.add(z3.Not(z3.And(conj)))
             else:
                 solution_exists[d] = False
         return sample_set
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     #     return np.sum(config)
 
     dbs = DistanceBasedSampler(_vm, None)
-    s = dbs.sample(100)
+    s = dbs.sample(5)
     print(s)
 
     pass
