@@ -1,59 +1,49 @@
 import unittest
-from src.samplers.diversity_promotion import DiverseVM
+from src.samplers.diversity_promotion import DiversityPromotionSampler
 from src.samplers import VariabilityModel
 import z3
 
 path = '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs'
 
 
-def solve(vm: z3.Solver, n: int):
-    ret = []
-    for _ in range(n):
-        if vm.check() == z3.sat:
-            c = vm.model()
-            # TODO: check if c ist None
-            ret.append(c)
-            # manipulate model
-            conj = []
-            for decl in c.decls():
-                lit = z3.Bool(decl.name())
-                if c[decl]:
-                    conj.append(lit)
-                else:
-                    conj.append(z3.Not(lit))
-            vm.add(z3.Not(z3.And(conj)))
-
-    return ret
+def make_models():
+    return VariabilityModel(path), VariabilityModel(path)
 
 
 class MyTestCase(unittest.TestCase):
-
     def test_clause_shuffle_true_10(self):
-        vm1, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=True)
-        vm2, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=True)
-        c1 = solve(vm1, 10)
-        c2 = solve(vm2, 10)
+        vm1, vm2 = make_models()
+        n = 10
+        dps1 = DiversityPromotionSampler(vm1)
+        dps2 = DiversityPromotionSampler(vm2)
+
+        c1 = dps1.sample(n)
+        c2 = dps2.sample(n)
+
         self.assertNotEqual(str(c1), str(c2))
 
     def test_clause_shuffle_true_1(self):
-        vm1, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=True)
-        vm2, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=True)
-        c1 = solve(vm1, 1)
-        c2 = solve(vm2, 1)
+        vm1, vm2 = make_models()
+        n = 1
+        dps1 = DiversityPromotionSampler(vm1)
+        dps2 = DiversityPromotionSampler(vm2)
+
+        c1 = dps1.sample(n)
+        c2 = dps2.sample(n)
+
         self.assertNotEqual(str(c1), str(c2))
 
     def test_clause_shuffle_false(self):
-        vm1, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=False)
-        vm2, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=False)
-        c1 = solve(vm1, 10)
-        c2 = solve(vm2, 10)
-        self.assertEqual(str(c1), str(c2))
+        vm1, vm2 = make_models()
+        n = 5
+        dps1 = DiversityPromotionSampler(vm1, shuffle_clauses=False, shuffle_literals=False, random_phase=False,
+                                         seed=42)
+        dps2 = DiversityPromotionSampler(vm2, shuffle_clauses=False, shuffle_literals=False, random_phase=False,
+                                         seed=42)
 
-    def test_clause_shuffle_false_1(self):
-        vm1, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=False)
-        vm2, _, _, _ = DiverseVM.parse_dimacs(path, shuffle=False)
-        c1 = solve(vm1, 1)
-        c2 = solve(vm2, 1)
+        c1 = dps1.sample(n)
+        c2 = dps2.sample(n)
+
         self.assertEqual(str(c1), str(c2))
 
 
