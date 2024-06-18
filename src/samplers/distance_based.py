@@ -1,14 +1,13 @@
 from typing import Callable
 
 import z3
-
-from src.samplers import VariabilityModel
+from src.samplers import VariabilityModel, ISampler
 import numpy as np
 
 
 # class DistanceBasedSampler(ISampler):
-class DistanceBasedSampler:
-    def __init__(self, vm: VariabilityModel, distance_metric: Callable[[list], int]):
+class DistanceBasedSampler(ISampler):
+    def __init__(self, vm: VariabilityModel):
         """
 
 
@@ -17,9 +16,7 @@ class DistanceBasedSampler:
         :param distance_metric:  function that evaluates the distance of a configuration (from origin)
         :type distance_metric:
         """
-        self.vm = vm
-        self.distance_metric = distance_metric  # TODO: this could be dismissed
-        # construct a distribution of distances
+        super().__init__(vm)
         self._min_distance, self._max_distance = self._init_distribution(vm)
         self._rng = np.random.default_rng()
 
@@ -49,7 +46,6 @@ class DistanceBasedSampler:
 
     def sample(self, n_samples: int) -> set:
         sample_set = set()
-        # TODO: implement no solutions (i.e. no distances check)
         while len(sample_set) < n_samples:
             # if all entries are set to False, there are no solutions
             # change this every iteration since the model changes each iter
@@ -62,19 +58,11 @@ class DistanceBasedSampler:
                 continue
             c: z3.ModelRef = self.search_config_with_distance(d)
             # add c to num_smpls and add insert c to cnf in model
+
             if c is not None:
                 solution_exists[d] = True
                 sample_set.add(c)
-                # manipulate model
-                # generate conjunction of the literals that mathc the model
-                conj = []
-                for decl in c.decls():
-                    lit = z3.Bool(decl.name())
-                    if c[decl]:
-                        conj.append(lit)
-                    else:
-                        conj.append(z3.Not(lit))
-                self.vm.model.add(z3.Not(z3.And(conj)))
+                self.add_conjunction_to_model(c)
             else:
                 solution_exists[d] = False
         return sample_set
@@ -110,7 +98,7 @@ class DistanceBasedSampler:
         :return:
         :rtype:
         """
-        m: z3.Solver = self.vm.model.translate(z3.main_ctx())
+        m: z3.Solver = self.vm.solver.translate(z3.main_ctx())
         variables = [f'k!{i}' for i in range(1, self.vm.num_literals + 1)]
         m.add(z3.PbEq([(z3.Bool(v), 1) for v in variables], d))
         if m.check() == z3.sat:
@@ -143,7 +131,7 @@ if __name__ == '__main__':
     #     """
     #     return np.sum(config)
 
-    dbs = DistanceBasedSampler(_vm, None)
+    dbs = DistanceBasedSampler(_vm)
     s = dbs.sample(5)
     print(s)
 
