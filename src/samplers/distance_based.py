@@ -52,7 +52,9 @@ class DistanceBasedSampler(ISampler):
             solution_exists = dict.fromkeys(range(self._min_distance,
                                                   self._max_distance + 1))
             if all(x is False for x in solution_exists.values()):
-                break  # no more solutions exist
+                print("Model is unsat, no more solutions exist."
+                      "Returning the current sample set of size: ", len(sample_set))
+                return sample_set
             d = self.select_distance()
             if solution_exists[d] is False:
                 continue
@@ -109,7 +111,8 @@ class DistanceBasedSampler(ISampler):
 
 if __name__ == '__main__':
     _vm = VariabilityModel(
-        '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs')
+        # '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs')
+        '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/uf20-01.cnf')
 
     # print(_vm.model)
     print("num_vars", _vm.num_literals)
@@ -132,7 +135,7 @@ if __name__ == '__main__':
     #     return np.sum(config)
 
     dbs = DistanceBasedSampler(_vm)
-    s = dbs.sample(5)
+    s = dbs.sample(100)
     print(s)
 
     pass

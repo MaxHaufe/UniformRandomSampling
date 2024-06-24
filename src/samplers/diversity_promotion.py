@@ -44,9 +44,15 @@ class DiversityPromotionSampler(ISampler):
                 sample_set.add(c)
                 self.add_conjunction_to_model(c)
             else:
-                print("Model is unsat")
+                print("Model is unsat, no more solutions exist."
+                      "Returning the current sample set of size: ", len(sample_set))
                 return sample_set
         return sample_set
+
+    def sample_all(self):
+        # approximate n as the number of all possible configurations
+        n = 2 ** len(self.vm.literals)
+        return self.sample(n)
 
 
 def compare():
@@ -100,33 +106,14 @@ def compare():
     plt.show()
 
 
-# def solve(vm: VariabilityModel, n: int):
-#     ret = []
-#     for _ in range(n):
-#         if vm.model.check() == z3.sat:
-#             c = vm.model.model()
-#             # TODO: check if c ist None
-#             ret.append(c)
-#             # manipulate model
-#             conj = []
-#             for decl in c.decls():
-#                 lit = z3.Bool(decl.name())
-#                 if c[decl]:
-#                     conj.append(lit)
-#                 else:
-#                     conj.append(z3.Not(lit))
-#             vm.model.add(z3.Not(z3.And(conj)))
-#
-#     return ret
-
-
-# (a v b v c) n (not(a) v b v c)
 if __name__ == '__main__':
-    # vm1 = VariabilityModel(
-    #     '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs')
-    # n = 5
-    # dps = DiversityPromotionSampler(vm1)
-    # s = dps.sample(100)
+    vm1 = VariabilityModel(
+        # '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs')
+    '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/uf20-0100.cnf')
+    n = 5
+    dps = DiversityPromotionSampler(vm1)
+    s = dps.sample_all()
+    print(len(s))
     # print(s)
 
-    compare()
+    # compare()
