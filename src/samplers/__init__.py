@@ -34,6 +34,9 @@ class VariabilityModel:
                 elif line.startswith('c') or line == '':
                     # Comment line or empty line, ignore
                     continue
+                elif line.startswith('%'):
+                    # End of file
+                    break
                 else:
                     # Clause line
                     clause = []
