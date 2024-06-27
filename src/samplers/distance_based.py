@@ -1,7 +1,7 @@
 from typing import Callable
 
 import z3
-from src.samplers import VariabilityModel, ISampler
+from . import VariabilityModel, ISampler
 import numpy as np
 
 

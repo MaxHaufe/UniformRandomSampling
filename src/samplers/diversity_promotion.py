@@ -1,6 +1,6 @@
 import numpy as np
 import z3
-from src.samplers import VariabilityModel, ISampler
+from . import VariabilityModel, ISampler
 import random
 import matplotlib.pyplot as plt
 
@@ -8,13 +8,12 @@ import matplotlib.pyplot as plt
 class DiversityPromotionSampler(ISampler):
 
     def __init__(self, vm: VariabilityModel, shuffle_clauses: bool = True, shuffle_literals: bool = True,
-                 random_phase: bool = True, seed: int = None):
+                 random_phase: bool = True):
         super().__init__(vm)
         self.shuffle_clauses = shuffle_clauses
         self.shuffle_literals = shuffle_literals
         self.switch_phase = random_phase
         self.vm.solver = None  # destroy model since we re-create the model for each sampling step
-        self.seed = seed
 
     def sample(self, n_samples: int) -> set:
         sample_set = set()
@@ -30,9 +29,6 @@ class DiversityPromotionSampler(ISampler):
 
             # create the solver
             self.vm.solver = z3.Solver()
-            if self.seed:
-                # testing
-                self.vm.solver.set('random_seed', self.seed)
             self.vm.solver.add(self.vm.clauses)
 
             # change phase
@@ -109,10 +105,12 @@ def compare():
 if __name__ == '__main__':
     vm1 = VariabilityModel(
         # '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/emse-evaluation-sharpsat/cnf/berkeleydb/berkeleydb.dimacs')
-    '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/uf20-0100.cnf')
-    n = 5
+    # '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/uf20-0100.cnf')
+    # '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/small/final/blasted_case127.cnf') #ok
+    '/home/max/Nextcloud/Uni/3.Semester/AutoSE/seminar/dimacs/small/final/blasted_case60.cnf')
+    n = 100
     dps = DiversityPromotionSampler(vm1)
-    s = dps.sample_all()
+    s = dps.sample(n)
     print(len(s))
     # print(s)
 
